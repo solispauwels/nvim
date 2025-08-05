@@ -1,0 +1,10 @@
+/* General window background */
+QWidget {
+    background-color: #242424;
+    color: #ffffff;
+}
+
+/* Full dark vertical scrollbar */
+QScrollBar {
+    width: 0;
+}
