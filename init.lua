@@ -12,6 +12,8 @@ vim.opt.mousemodel = "popup"
 vim.opt.keymodel = { "startsel", "stopsel" }
 vim.opt.whichwrap = [[b,s,<,>h,l]]
 vim.o.title = true
+vim.o.titlestring = "%t%M"
+vim.opt.termguicolors = true
 
 -- Swap, backup, search, UI tweaks
 vim.opt.swapfile = false
@@ -33,7 +35,8 @@ vim.opt.tabstop = 4
 vim.opt.wildignore:append({ "*/generated/*", "*/node_modules/*", "*/dist/*", "*/private/*", "*/.git/*" })
 vim.opt.comments:remove("://")
 --vim.cmd.colorscheme("wombat")
-vim.opt.wrap = false 
+vim.opt.wrap = false
+vim.o.autoread = true
 
 -- Optionally set tab/indent preferences
 vim.opt.tabstop = 2         -- Number of visual spaces per TAB
@@ -41,6 +44,22 @@ vim.opt.softtabstop = 0     -- Number of spaces inserted for a <Tab> (0 = use sh
 vim.opt.expandtab = true    -- Use spaces instead of tabs
 vim.opt.shiftwidth = 2      -- Number of spaces to use for autoindent
 vim.opt.smarttab = true     -- Use shiftwidth when pressing <Tab> at beginning of line
+
+-- wsl
+vim.g.clipboard = {
+  name = "wsl-clip-copy-only",
+  copy = {
+    ["+"] = "clip.exe",
+    ["*"] = "clip.exe",
+  },
+  paste = {
+    -- Use a dummy no-op command to preserve built-in paste behavior
+    -- This avoids breaking paste while letting terminal handle it
+    ["+"] = "cat", -- no-op (you won’t use `"+p` here anyway)
+    ["*"] = "cat",
+  },
+  cache_enabled = 0,
+}
 
 -- Keymaps
 local function map(mode, lhs, rhs, opts)
@@ -83,9 +102,6 @@ local function command_paste()
   vim.api.nvim_feedkeys(clip, "t", false)
 end
 
--- Right-click context menu (noop in terminal, skip)
--- You can implement a custom menu if you use a GUI frontend
-
 map("n", "Y", "Y")
 map("n", "P", "P")
 
@@ -95,13 +111,12 @@ map("i", "<Right>", move_right)
 -- Copy/Cut/Paste
 map("n", "<C-C>", '"+y')
 map("v", "<C-C>", '"+y')
+
 map("n", "<C-X>", '"+d')
 map("v", "<C-X>", '"+d')
+
 map("n", "<C-V>", '"+gP')
---map("v", "<C-V>", '"+gP')
 map("v", "<C-V>", '<MiddleMouse>')
---map("i", "<C-V>", '<C-R>+')
---map("i", "<C-V>", clean_paste)
 map("i", "<C-V>", "<MiddleMouse>")
 map("c", "<C-V>", command_paste)
 
@@ -157,18 +172,16 @@ map("n", "<A-Down>", ":wincmd j<CR>")
 map("n", "<A-Left>", ":wincmd h<CR>")
 map("n", "<A-Right>", ":wincmd l<CR>")
 
-map("n", "<C-PageDown>", "<Cmd>BufferNext<CR>")
-map("n", "<C-PageUp>", "<Cmd>BufferPrevious<CR>")
-map("i", "<C-PageDown>", "<Cmd>BufferNext<CR>")
-map("i", "<C-PageUp>", "<Cmd>BufferPrevious<CR>")
+--map("n", "<C-PageDown>", "<Cmd>BufferNext<CR>")
+--map("n", "<C-PageUp>", "<Cmd>BufferPrevious<CR>")
+--map("i", "<C-PageDown>", "<Cmd>BufferNext<CR>")
+--map("i", "<C-PageUp>", "<Cmd>BufferPrevious<CR>")
 
 -- LSP configuration
-vim.diagnostic.config({
-  virtual_text = true,
-  signs = true,
-  underline = true,
-  update_in_insert = false,
-  severity_sort = true,
-})
-
-vim.api.nvim_set_current_dir("Z:\\home\\jorge\\mywaypro\\trade-engine-core")
+-- vim.diagnostic.config({
+--   virtual_text = true,
+--   signs = true,
+--   underline = true,
+--   update_in_insert = false,
+--   severity_sort = true,
+-- })
