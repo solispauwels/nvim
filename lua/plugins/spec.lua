@@ -36,63 +36,6 @@ return {
       -- vim.api.nvim_set_hl(0, "Todo", { fg = "#8f8f8f", bg = "#ffff00" })
     end,
   },
-  --[[
-  {
-    "akinsho/bufferline.nvim",
-    version = "*",
-    opts = {
-      options = {
-        mode = "tabs",
-        show_buffer_close_icons = false,
-        show_close_icon = false,
-        --always_show_bufferline = false,
-        --separator_style = "thick", 
-        separator_style = {"", ""}, 
-        tab_size = 10,             
-        max_name_length = 20,      
-        diagnostics = "nvim_lsp",
-        -- padding is controlled by these two:
-        --indicator = { style = "underline" },
-        numbers = "none",
-      },
-      highlights = {
-        fill = {
-          bg = "#2e2e2e"
-        },
-        -[
-        background = {
-          fg = "#5c6370",
-          bg = "#1e222a",
-        },
-        tab = {
-          fg = "#5c6370",
-          bg = "#1e222a",
-        },
-        tab_selected = {
-          fg = "#ffffff",
-          bg = "#282c34",
-        },
-        tab_close = {
-          fg = "#ff6c6b",
-          bg = "#1e222a",
-        },
-        separator = {
-          fg = "#1e222a",
-          bg = "#1e222a",
-        },
-        separator_selected = {
-          fg = "#282c34",
-          bg = "#282c34",
-        },
-        indicator_selected = {
-          fg = "#61afef",
-          bg = "#282c34",
-        },
-        -]
-      },
-    },
-  },
-  --]]
   {
     "nvim-neo-tree/neo-tree.nvim",
     branch = "v3.x",
@@ -118,7 +61,7 @@ return {
         vim.system(cmd, { detach = true })
       end
       require("neo-tree").setup({
-        -- close_if_last_window = true,
+        close_if_last_window = true,
         commands = {
           open_in_new_terminal = open_in_new_terminal,
         },
@@ -344,42 +287,6 @@ return {
     }) 
     end,
   },
-  --[[
-  {
-    'romgrk/barbar.nvim',
-    dependencies = {
-      -- 'lewis6991/gitsigns.nvim', -- OPTIONAL: for git status
-      'nvim-tree/nvim-web-devicons', -- OPTIONAL: for file icons
-    },
-    init = function() vim.g.barbar_auto_setup = false end,
-    opts = {
-      -- lazy.nvim will automatically call setup for you. put your options here, anything missing will use the default:
-      -- animation = true,
-      -- insert_at_start = true,
-      -- …etc.
-    },
-    config = function()
-      require("barbar").setup({
-        icons = {
-          buffer_index = false,    -- turn off buffer numbers
-          buffer_number = false,
-          button = '',             -- this removes the X close icon
-          filetype = { enabled = true },
-          separator = { left = '▎', right = ' ' },
-          --pinned = {separator = { right = '', left = ''} },
-          inactive = { separator = {left = '▎', right = ' '} },
-          separator_at_end = false,
-          modified = { button = ' ●' }, -- keep this or remove
-          --preset = 'slanted',
-        },
-        hide = { extensions = true },
-        tabpages = false,         -- <--- disables the 2/2 indicator
-        maximum_padding = 0,      -- reduce padding between tabs
-        minimum_padding = 0,
-      })
-    end,
-  },
-  --]]
   {
     "nvim-lualine/lualine.nvim",
     dependencies = { "nvim-tree/nvim-web-devicons" },
