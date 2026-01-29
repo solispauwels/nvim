@@ -44,7 +44,22 @@ vim.opt.softtabstop = 0     -- Number of spaces inserted for a <Tab> (0 = use sh
 vim.opt.expandtab = true    -- Use spaces instead of tabs
 vim.opt.shiftwidth = 2      -- Number of spaces to use for autoindent
 vim.opt.smarttab = true     -- Use shiftwidth when pressing <Tab> at beginning of line
+vim.g.clipboard = {
+  name = "win32yank",
+  copy = {
+    ["+"] = "win32yank.exe -i --crlf",
+    ["*"] = "win32yank.exe -i --crlf",
+  },
+  paste = {
+    ["+"] = "win32yank.exe -o --lf",
+    ["*"] = "win32yank.exe -o --lf",
+  },
+  cache_enabled = 0,
+}
 
+vim.cmd("aunmenu PopUp")
+
+--[[
 -- wsl
 vim.g.clipboard = {
   name = "wsl-clip-copy-only",
@@ -60,7 +75,7 @@ vim.g.clipboard = {
   },
   cache_enabled = 0,
 }
-
+--]]
 -- Keymaps
 local function map(mode, lhs, rhs, opts)
   opts = vim.tbl_extend("force", { noremap = true, silent = true }, opts or {})
@@ -119,6 +134,10 @@ map("n", "<C-V>", '"+gP')
 map("v", "<C-V>", '<MiddleMouse>')
 map("i", "<C-V>", "<MiddleMouse>")
 map("c", "<C-V>", command_paste)
+
+-- Map right click to copy
+map("v", "<RightMouse>", '"+y')
+map("n", "<RightMouse>", '"+y')
 
 -- Undo/Redo
 map("n", "<C-Z>", "u")
