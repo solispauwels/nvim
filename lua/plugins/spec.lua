@@ -46,6 +46,48 @@ return {
     },
     lazy = false, -- neo-tree will lazily load itself
     config = function()
+      local resize_timer = nil
+      local resize_retries = 0
+      local max_retries = 6
+
+      local function set_tmux_pane_width()
+        if not (vim.env.TMUX and vim.env.TMUX ~= "") then
+          return
+        end
+  
+        vim.fn.system({ "tmux", "resize-pane", "-t", "0", "-x", "40" })
+      end
+
+      vim.api.nvim_create_autocmd("VimResized", {
+        callback = function()
+          if resize_timer then
+            resize_timer:stop()
+            resize_timer:close()
+            resize_timer = nil
+          end
+
+          resize_retries = 0
+          resize_timer = vim.loop.new_timer()
+
+          resize_timer:start(
+            200, -- initial wait
+            100, -- retry interval
+            vim.schedule_wrap(function()
+              resize_retries = resize_retries + 1
+              set_tmux_pane_width()
+
+              if resize_retries >= max_retries then
+                if resize_timer then
+                  resize_timer:stop()
+                  resize_timer:close()
+                  resize_timer = nil
+                end
+              end
+            end)
+          )
+        end,
+      })
+
       local function open_in_new_terminal(state)
         local node = state.tree:get_node()
         local path = node.path or node.id
@@ -60,9 +102,87 @@ return {
 
         vim.system(cmd, { detach = true })
       end
+      local function open_tabnew_tmux(state)
+        local node = state.tree:get_node()
+        if not node or node.type ~= "file" then
+          return
+        end
+
+        local path = node.path or node:get_id()
+        if not path then
+          return
+        end
+
+        if vim.env.TMUX then
+          local vim_cmd = ":tabe " .. vim.fn.fnameescape(path)
+          -- vim.fn.jobstart({ "tmux", "send-keys", "-t", "1", "Escape", vim_cmd, "Enter", "i", ";", "select-pane", "-t", "1" }, {
+          vim.fn.jobstart({ "tmux", "send-keys", "-t", "1", "Escape", vim_cmd, "Enter", ";", "select-pane", "-t", "1" }, {
+            detach = true,
+          })
+          return
+        end
+
+        vim.cmd("tabnew " .. vim.fn.fnameescape(path))
+
+        vim.schedule(function()
+          require("neo-tree.command").execute({
+            action = "show",
+            source = "filesystem",
+            position = "left",
+            reveal_file = path,
+          })
+        end)
+      end
+      local function open_edit_tmux(state)
+        local node = state.tree:get_node()
+        if not node then
+          return
+        end
+
+        -- Keep default folder behavior on <CR>
+        if node.type == "directory" then
+          state.commands.toggle_node(state)
+          return
+        end
+
+        if node.type ~= "file" then
+          return
+        end
+
+        local path = node.path or node:get_id()
+        if not path then
+          return
+        end
+
+        -- If inside tmux, open file in the other pane with :e
+        if vim.env.TMUX then
+          local vim_cmd = ":e " .. vim.fn.fnameescape(path)
+
+          --vim.fn.jobstart({ "tmux", "send-keys", "-t", "1", "Escape", vim_cmd, "Enter", "i", ";", "select-pane", "-t", "1"  }, {
+          vim.fn.jobstart({ "tmux", "send-keys", "-t", "1", "Escape", vim_cmd, "Enter", ";", "select-pane", "-t", "1"  }, {
+            detach = true,
+          })
+
+          return
+        end
+
+        -- Normal behavior outside tmux
+        vim.cmd("edit " .. vim.fn.fnameescape(path))
+
+        vim.schedule(function()
+          require("neo-tree.command").execute({
+            action = "show",
+            source = "filesystem",
+            position = "left",
+            reveal_file = path,
+          })
+        end)
+      end
       require("neo-tree").setup({
         close_if_last_window = true,
         commands = {
+          open_tabnew_tmux = open_tabnew_tmux,
+          open_edit_tmux = open_edit_tmux,
           open_in_new_terminal = open_in_new_terminal,
         },
         filesystem = {
@@ -81,12 +201,15 @@ return {
           width = 40,
           mappings = {
             --["<CR>"] = "open_replace",
+            ["q"] = "none",
             ["/"] = "none",
-            ["t"] = "open_tabnew",
+            ["<cr>"] = "open_edit_tmux",
+            ["t"] = "open_tabnew_tmux",
             ["w"] = "open_in_new_terminal"
           },
         },
       })
+      --[[
       vim.api.nvim_create_autocmd("VimEnter", {
         callback = function()
           require("neo-tree.command").execute({
@@ -97,6 +220,7 @@ return {
           })
         end,
       })
+      --]]
       --[[
       function CloseSmart()
         local buffers = vim.fn.getbufinfo({ buflisted = 1 })
@@ -110,6 +234,7 @@ return {
         cnoreabbrev <expr> q getcmdtype() == ':' && getcmdline() == 'q' ? 'lua CloseSmart()' : 'q'
       ]]--)
       --]]
+      --[[
       vim.api.nvim_create_autocmd("TabEnter", {
         callback = function()
           vim.schedule(function()
@@ -134,6 +259,7 @@ return {
           end)
         end,
       })
+      --]]
       -- Close neo-tree iff it's the only remaining window in the *current tab*
       local function close_neotree_if_last_in_tab()
         local tab  = vim.api.nvim_get_current_tabpage()
@@ -516,7 +642,8 @@ return {
     event = { "BufReadPre", "BufNewFile" },
     config = function()
       require("conform").setup({
-        format_on_save = {
+        format_after_save = {
+          -- lsp_format = "fallback"
           lsp_fallback = true,
           timeout_ms = 5000,
         },

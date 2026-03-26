@@ -59,23 +59,6 @@ vim.g.clipboard = {
 
 vim.cmd("aunmenu PopUp")
 
---[[
--- wsl
-vim.g.clipboard = {
-  name = "wsl-clip-copy-only",
-  copy = {
-    ["+"] = "clip.exe",
-    ["*"] = "clip.exe",
-  },
-  paste = {
-    -- Use a dummy no-op command to preserve built-in paste behavior
-    -- This avoids breaking paste while letting terminal handle it
-    ["+"] = "cat", -- no-op (you won’t use `"+p` here anyway)
-    ["*"] = "cat",
-  },
-  cache_enabled = 0,
-}
---]]
 -- Keymaps
 local function map(mode, lhs, rhs, opts)
   opts = vim.tbl_extend("force", { noremap = true, silent = true }, opts or {})
@@ -124,7 +107,9 @@ map("i", "<Left>", move_left)
 map("i", "<Right>", move_right)
 
 -- Copy/Cut/Paste
+--map("n", "<C-C>", '"+y')
 map("n", "<C-C>", '"+y')
+--map("v", "<C-C>", '"+y')
 map("v", "<C-C>", '"+y')
 
 map("n", "<C-X>", '"+d')
@@ -148,6 +133,8 @@ map("i", "<C-Z>", "<C-O>u")
 map("i", "<C-Y>", "<C-O><C-R>")
 map("c", "<C-Z>", "<C-C><C-Z>")
 map("c", "<C-Y>", "<C-C><C-R>")
+map("i", "<Space>", "<Space><C-g>u")
+map("i", "<CR>", "<CR><C-g>u")
 
 -- Select all
 map("i", "<C-A>", "<Esc>ggVG")
